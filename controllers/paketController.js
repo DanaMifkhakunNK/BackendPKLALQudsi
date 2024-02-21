@@ -38,7 +38,12 @@ const createPaket = async (req, res, next) => {
 };
 // get paket  api/paket
 const getPaket = async (req, res, next) => {
-  res.json("get all Post");
+  try {
+    const pakets = await Paket.find().sort({ updatedAt: -1 });
+    res.status(200).json(pakets);
+  } catch (error) {
+    return next(new HttpError(error));
+  }
 };
 // get paket  api/paket:id
 const getSingle = async (req, res, next) => {

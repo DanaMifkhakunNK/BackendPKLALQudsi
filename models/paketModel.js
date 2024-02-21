@@ -1,29 +1,33 @@
-const mongoose = require("mongoose");
+const { Schema, model } = require("mongoose");
 
-const paketSchema = new mongoose.Schema(
+const paketSchema = new Schema(
   {
-    title: {
+    judul: {
       type: String,
-      required: [true, "title is required"],
+      required: true,
     },
-    date: {
+    tanggal: {
       type: String,
-      required: [true, "date is required"],
+      required: true,
     },
-    price: {
+    harga: {
       type: String,
-      required: [true, "price is required"],
+      required: true,
     },
-    wa: {
+    pesan: {
       type: String,
-      required: [true, "pesan is required"],
+      required: true,
     },
-    image: {
-      url: String,
-      public_id: String,
+    gambar: {
+      type: String,
+      required: true,
+    },
+    pembuat: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("paket", paketSchema);
+module.exports = model("paket", paketSchema);

@@ -106,7 +106,30 @@ const editPaket = async (req, res, next) => {
 
 // detele paket api/paket/:id
 const deletePaket = async (req, res, next) => {
-  res.json("delete Post");
+  try {
+    const paketId = req.params.id;
+    if (!paketId) {
+      return next(new HttpError("Paket tidak tersedia", 400));
+    }
+    const paket = await Paket.findById(paketId);
+    const fileName = paket?.gambar;
+    //delete gambar
+    fs.unlink(path.join(__dirname, "..", "/uploads", fileName), async (err) => {
+      if (err) {
+        return next(new HttpError(err));
+      } else {
+        await Paket.findByIdAndDelete(paketId);
+        //find paket
+        const currentUser = await Paket.findById(req.user.id);
+        const userPaketCount = currentUser?.paket - 1;
+        await Paket.findByIdAndUpdate(req.user.id, { paket: userPaketCount });
+      }
+    });
+
+    res.json("Paket ${paketId} deleted");
+  } catch (error) {
+    return next(new HttpError(error));
+  }
 };
 
 module.exports = { createPaket, getPaket, getSingle, editPaket, deletePaket };

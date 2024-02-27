@@ -14,17 +14,9 @@ const paketSchema = new Schema(
       type: String,
       required: true,
     },
-    pesan: {
-      type: String,
-      required: true,
-    },
     gambar: {
       type: String,
       required: true,
-    },
-    pembuat: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
     },
   },
   { timestamps: true }

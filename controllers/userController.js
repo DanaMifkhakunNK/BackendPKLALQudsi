@@ -5,39 +5,25 @@ const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 
 const loginUser = async (req, res, next) => {
-  // const {username, password} = req.body;
-  //   User.findOne({username : email})
-  //   .then(user => {
-  //       if(user) {
-  //           if(user.password === password){
-  //               res.json("Success")
-  //           }else{
-  //               res.json("The password is incorrect")
-  //           }
-  //       }else{
-  //           res.json("No record existed")
-  //       }
-  //   }
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
-      return next(new HttpError("Fill in all fields", 422));
-    }
+    // if (!email || !password) {
+    //   return next(new HttpError("Fill in all fields", 422));
+    // }
     const newEmail = email.toLowerCase();
     const user = await User.findOne({ email: newEmail });
     if (!user) {
-      return next(new HttpError("invalid credentialada", 422));
+      return next(new HttpError("Cek Kembali Email Anda!.", 422));
     }
-
     const comparePass = await bcrypt.compare(password, user.password);
     if (!comparePass) {
-      return next(new HttpError("invalid password", 422));
+      return next(new HttpError("Password Anda Salah!.", 422));
     }
     const { _id: id, name } = user;
     const token = jwt.sign({ id, name }, process.env.JWT_SECRET, { expiresIn: "1d" });
     res.status(200).json({ token, id, name });
   } catch (error) {
-    return next(new HttpError("Login Failed ", 422));
+    return next(new HttpError("Login Gagal ", 422));
   }
 };
 

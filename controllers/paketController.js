@@ -8,7 +8,7 @@ const HttpError = require("../models/errorModel");
 // post paket  api/paket
 const createPaket = async (req, res, next) => {
   try {
-    let { judul, tanggal, harga, pesan } = req.body;
+    let { judul, tanggal, harga } = req.body;
     const { gambar } = req.files;
     if (gambar.size > 2000000) {
       return next(new HttpError("gambar terlalu besar"));
@@ -20,7 +20,7 @@ const createPaket = async (req, res, next) => {
       if (err) {
         return next(new HttpError(err));
       } else {
-        const newPaket = await Paket.create({ judul, tanggal, harga, pesan, gambar: newFilename, pembuat: req.user.id });
+        const newPaket = await Paket.create({ judul, tanggal, harga, gambar: newFilename });
         if (!newPaket) {
           return next(new HttpError("gagal membuat paket", 422));
         }
@@ -62,40 +62,41 @@ const getSingle = async (req, res, next) => {
 // patch paket api/paket/:id
 const editPaket = async (req, res, next) => {
   try {
-    let fileName, newFilename, updatePaket;
+    let fileName;
+    let newFilename;
+    let updatePaket;
     const paketId = req.params.id;
-    let { judul, tanggal, harga, pesan } = req.body;
+    let { judul, tanggal, harga } = req.body;
 
-    if (!req.files) {
-      updatePaket = await Paket.findByIdAndUpdate(paketId, { judul, tanggal, harga, pesan }, { new: true });
-    } else {
-      //get paket sebelumnya
-      const oldPaket = await Paket.findById(paketId);
-      //delete gambar sebelumnya
-      fs.unlink(path.join(__dirname, "..", "/uploads", oldPaket.gambar), async (err) => {
-        if (err) {
-          return next(new HttpError(err));
+    if (req.user.id) {
+      if (!req.files) {
+        updatePaket = await Paket.findByIdAndUpdate(paketId, { judul, tanggal, harga }, { new: true });
+      } else {
+        const oldPaket = await Paket.findById(paketId);
+        fs.unlink(path.join(__dirname, "..", "uploads", oldPaket.gambar), async (err) => {
+          if (err) {
+            return next(new HttpError(err));
+          }
+        });
+        //upload gambar baru
+        const { gambar } = req.files;
+        if (gambar.size > 2000000) {
+          return next(new HttpError("ukuran gambar terlalu besar"));
         }
-      });
-      //upload gambar baru
-      const { gambar } = req.files;
-      if (gambar.size > 2000000) {
-        return next(new HttpError("ukuran gambar terlalu besar"));
+        fileName = gambar.name;
+        let splittedFilename = fileName.split(".");
+        newFilename = splittedFilename[0] + uuid() + "." + splittedFilename[splittedFilename.length - 1];
+        gambar.mv(path.join(__dirname, "..", "uploads", newFilename), async (err) => {
+          if (err) {
+            return next(new HttpError(err));
+          }
+        });
+        updatePaket = await Paket.findByIdAndUpdate(paketId, { judul, tanggal, harga, gambar: newFilename }, { new: true });
       }
-      let fileName = gambar.name;
-      let splittedFilename = fileName.split(".");
-      let newFilename = splittedFilename[0] + uuid() + "." + splittedFilename[splittedFilename.length - 1];
-      gambar.mv(path.join(__dirname, "..", "/uploads", newFilename), async (err) => {
-        if (err) {
-          return next(new HttpError(err));
-        }
-      });
-
-      updatePaket = await Paket.findByIdAndUpdate(paketId, { judul, tanggal, harga, pesan, gambar: newFilename }, { new: true });
     }
 
     if (!updatePaket) {
-      return next(new HtppError("tidak bsa update ", 400));
+      return next(new HttpError("tidak bsa update ", 400));
     }
 
     res.status(200).json(updatePaket);
@@ -113,20 +114,23 @@ const deletePaket = async (req, res, next) => {
     }
     const paket = await Paket.findById(paketId);
     const fileName = paket?.gambar;
+    if (req.user.id) {
+      fs.unlink(path.join(__dirname, "..", "/uploads", fileName), async (err) => {
+        if (err) {
+          return next(new HttpError(err));
+        } else {
+          await Paket.findByIdAndDelete(paketId);
+          //find paket
+          const currentUser = await Paket.findById(req.user.id);
+          const userPaketCount = currentUser?.paket - 1;
+          await Paket.findByIdAndUpdate(req.user.id, { paket: userPaketCount });
+          res.json(`Paket ${paketId} deleted`);
+        }
+      });
+    } else {
+      return next(new HttpError("Paket tidak bsa didelet", 403));
+    }
     //delete gambar
-    fs.unlink(path.join(__dirname, "..", "/uploads", fileName), async (err) => {
-      if (err) {
-        return next(new HttpError(err));
-      } else {
-        await Paket.findByIdAndDelete(paketId);
-        //find paket
-        const currentUser = await Paket.findById(req.user.id);
-        const userPaketCount = currentUser?.paket - 1;
-        await Paket.findByIdAndUpdate(req.user.id, { paket: userPaketCount });
-      }
-    });
-
-    res.json("Paket ${paketId} deleted");
   } catch (error) {
     return next(new HttpError(error));
   }

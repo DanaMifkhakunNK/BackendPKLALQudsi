@@ -11,7 +11,7 @@ const createPaket = async (req, res, next) => {
     let { judul, tanggal, harga } = req.body;
     const { gambar } = req.files;
     if (gambar.size > 2000000) {
-      return next(new HttpError("gambar terlalu besar"));
+      return next(new HttpError("ukuran gambar terlalu besar"));
     }
     let fileName = gambar.name;
     let splittedFilename = fileName.split(".");
@@ -22,7 +22,7 @@ const createPaket = async (req, res, next) => {
       } else {
         const newPaket = await Paket.create({ judul, tanggal, harga, gambar: newFilename });
         if (!newPaket) {
-          return next(new HttpError("gagal membuat paket", 422));
+          return next(new HttpError("gagal menambahkan paket", 422));
         }
 
         const currentUser = await User.findById(req.user.id);
@@ -73,7 +73,7 @@ const editPaket = async (req, res, next) => {
         updatePaket = await Paket.findByIdAndUpdate(paketId, { judul, tanggal, harga }, { new: true });
       } else {
         const oldPaket = await Paket.findById(paketId);
-        fs.unlink(path.join(__dirname, "..", "uploads", oldPaket.gambar), async (err) => {
+        fs.unlink(path.join(__dirname, "..", "/uploads", oldPaket.gambar), async (err) => {
           if (err) {
             return next(new HttpError(err));
           }
@@ -81,12 +81,12 @@ const editPaket = async (req, res, next) => {
         //upload gambar baru
         const { gambar } = req.files;
         if (gambar.size > 2000000) {
-          return next(new HttpError("ukuran gambar terlalu besar"));
+          return next(new HttpError("Ukuran Gambar Terlalu Besar"));
         }
         fileName = gambar.name;
         let splittedFilename = fileName.split(".");
         newFilename = splittedFilename[0] + uuid() + "." + splittedFilename[splittedFilename.length - 1];
-        gambar.mv(path.join(__dirname, "..", "uploads", newFilename), async (err) => {
+        gambar.mv(path.join(__dirname, "..", "/uploads", newFilename), async (err) => {
           if (err) {
             return next(new HttpError(err));
           }
@@ -96,7 +96,7 @@ const editPaket = async (req, res, next) => {
     }
 
     if (!updatePaket) {
-      return next(new HttpError("tidak bsa update ", 400));
+      return next(new HttpError("Tidak Bisa Update Paket ", 400));
     }
 
     res.status(200).json(updatePaket);
@@ -110,7 +110,7 @@ const deletePaket = async (req, res, next) => {
   try {
     const paketId = req.params.id;
     if (!paketId) {
-      return next(new HttpError("Paket tidak tersedia", 400));
+      return next(new HttpError("Paket Tidak Tersedia", 400));
     }
     const paket = await Paket.findById(paketId);
     const fileName = paket?.gambar;
@@ -128,7 +128,7 @@ const deletePaket = async (req, res, next) => {
         }
       });
     } else {
-      return next(new HttpError("Paket tidak bsa didelet", 403));
+      return next(new HttpError("Paket Tidak Bisa Dihapus", 403));
     }
     //delete gambar
   } catch (error) {

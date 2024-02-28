@@ -54,10 +54,7 @@ const deleteGaleri = async (req, res, next) => {
           return next(new HttpError(err));
         } else {
           await galeriModel.findByIdAndDelete(galeriId);
-          //find paket
-          const currentUser = await galeriModel.findById(req.user.id);
-          const userGaleriCount = currentUser?.galeri - 1;
-          await galeriModel.findByIdAndUpdate(req.user.id, { paket: userGaleriCount });
+
           res.json(`Galeri ${galeriId} deleted`);
         }
       });

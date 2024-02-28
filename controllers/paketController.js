@@ -1,5 +1,5 @@
 const Paket = require("../models/paketModel");
-const User = require("../models/userModel");
+
 const path = require("path");
 const fs = require("fs");
 const { v4: uuid } = require("uuid");
@@ -24,11 +24,6 @@ const createPaket = async (req, res, next) => {
         if (!newPaket) {
           return next(new HttpError("gagal menambahkan paket", 422));
         }
-
-        const currentUser = await User.findById(req.user.id);
-        const userPaketCount = currentUser.posts + 1;
-        await User.findByIdAndUpdate(req.user.id, { posts: userPaketCount });
-
         res.status(201).json(newPaket);
       }
     });
@@ -94,7 +89,6 @@ const editPaket = async (req, res, next) => {
         updatePaket = await Paket.findByIdAndUpdate(paketId, { judul, tanggal, harga, gambar: newFilename }, { new: true });
       }
     }
-
     if (!updatePaket) {
       return next(new HttpError("Tidak Bisa Update Paket ", 400));
     }
@@ -120,10 +114,6 @@ const deletePaket = async (req, res, next) => {
           return next(new HttpError(err));
         } else {
           await Paket.findByIdAndDelete(paketId);
-          //find paket
-          const currentUser = await Paket.findById(req.user.id);
-          const userPaketCount = currentUser?.paket - 1;
-          await Paket.findByIdAndUpdate(req.user.id, { paket: userPaketCount });
           res.json(`Paket ${paketId} deleted`);
         }
       });

@@ -6,6 +6,7 @@ const upload = require("express-fileupload");
 const userRoutes = require("./routes/usersRouters");
 const paketRoutes = require("./routes/paketRouters");
 const galeriRoutes = require("./routes/galeriRouters");
+const testiRoutes = require("./routes/testiRouter");
 const { notFound, erroHandler } = require("./middleware/errorMiddleware");
 
 const app = express();
@@ -18,6 +19,7 @@ app.use("/galeri", express.static(__dirname + "/galeri"));
 app.use("/api/users", userRoutes);
 app.use("/api/paket", paketRoutes);
 app.use("/api/galeri", galeriRoutes);
+app.use("/api/testi", testiRoutes);
 
 app.use(notFound);
 app.use(erroHandler);

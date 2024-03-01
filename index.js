@@ -7,6 +7,7 @@ const userRoutes = require("./routes/usersRouters");
 const paketRoutes = require("./routes/paketRouters");
 const galeriRoutes = require("./routes/galeriRouters");
 const testiRoutes = require("./routes/testiRouter");
+const kontakRoutes = require("./routes/kontakRouters");
 const { notFound, erroHandler } = require("./middleware/errorMiddleware");
 
 const app = express();
@@ -17,10 +18,12 @@ app.use(upload());
 app.use("/uploads", express.static(__dirname + "/uploads"));
 app.use("/galeri", express.static(__dirname + "/galeri"));
 app.use("/testi", express.static(__dirname + "/testi"));
+app.use("/logo", express.static(__dirname + "/logo"));
 app.use("/api/users", userRoutes);
 app.use("/api/paket", paketRoutes);
 app.use("/api/galeri", galeriRoutes);
 app.use("/api/testi", testiRoutes);
+app.use("/api/kontak", kontakRoutes);
 
 app.use(notFound);
 app.use(erroHandler);

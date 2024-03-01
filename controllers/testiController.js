@@ -14,15 +14,15 @@ const createTesti = (req, res, next) => {
     let fileName = testigambar.name;
     let splittedFilename = fileName.split(".");
     let newFilename = splittedFilename[0] + uuid() + "." + splittedFilename[splittedFilename.length - 1];
-    testigambar.mv(path.join(__dirname, "..", "/testigambar", newFilename), async (err) => {
+    testigambar.mv(path.join(__dirname, "..", "/testi", newFilename), async (err) => {
       if (err) {
         return next(new HttpError(err));
       } else {
-        const newPaket = await testiModel.create({ nama, testimonial, testigambar: newFilename });
-        if (!newPaket) {
-          return next(new HttpError("gagal menambahkan paket", 422));
+        const newTesti = await testiModel.create({ nama, testimonial, testigambar: newFilename });
+        if (!newTesti) {
+          return next(new HttpError("gagal menambahkan testi", 422));
         }
-        res.status(201).json(newPaket);
+        res.status(201).json(newTesti);
       }
     });
   } catch (error) {
@@ -32,7 +32,20 @@ const createTesti = (req, res, next) => {
 
 const getTesti = async (req, res, next) => {
   try {
-    const testi = await testiModel.find().sort({ updatedAt: -1 });
+    const testis = await testiModel.find().sort({ updatedAt: -1 });
+    res.status(200).json(testis);
+  } catch (error) {
+    return next(new HttpError(error));
+  }
+};
+
+const getSingle = async (req, res, next) => {
+  try {
+    const testiId = req.params.id;
+    const testi = await testiModel.findById(testiId);
+    if (!testi) {
+      return next(new HttpError("Testi not found", 404));
+    }
     res.status(200).json(testi);
   } catch (error) {
     return next(new HttpError(error));
@@ -52,7 +65,7 @@ const editTesti = async (req, res, next) => {
         updateTesti = await testiModel.findByIdAndUpdate(testiId, { nama, testimonial }, { new: true });
       } else {
         const oldTesti = await testiModel.findById(testiId);
-        fs.unlink(path.join(__dirname, "..", "/testigambar", oldTesti.testigambar), async (err) => {
+        fs.unlink(path.join(__dirname, "..", "/testi", oldTesti.testigambar), async (err) => {
           if (err) {
             return next(new HttpError(err));
           }
@@ -65,7 +78,7 @@ const editTesti = async (req, res, next) => {
         fileName = testigambar.name;
         let splittedFilename = fileName.split(".");
         newFilename = splittedFilename[0] + uuid() + "." + splittedFilename[splittedFilename.length - 1];
-        testigambar.mv(path.join(__dirname, "..", "/testigambar", newFilename), async (err) => {
+        testigambar.mv(path.join(__dirname, "..", "/testi", newFilename), async (err) => {
           if (err) {
             return next(new HttpError(err));
           }
@@ -92,7 +105,7 @@ const deleteTesti = async (req, res, next) => {
     const testi = await testiModel.findById(testiId);
     const fileName = testi?.testigambar;
     if (req.user.id) {
-      fs.unlink(path.join(__dirname, "..", "/testigambar", fileName), async (err) => {
+      fs.unlink(path.join(__dirname, "..", "/testi", fileName), async (err) => {
         if (err) {
           return next(new HttpError(err));
         } else {
@@ -108,4 +121,4 @@ const deleteTesti = async (req, res, next) => {
     return next(new HttpError(error));
   }
 };
-module.exports = { createTesti, getTesti, editTesti, deleteTesti };
+module.exports = { createTesti, getTesti, editTesti, deleteTesti, getSingle };

@@ -16,6 +16,7 @@ app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(upload());
 app.use("/uploads", express.static(__dirname + "/uploads"));
 app.use("/galeri", express.static(__dirname + "/galeri"));
+app.use("/testi", express.static(__dirname + "/testi"));
 app.use("/api/users", userRoutes);
 app.use("/api/paket", paketRoutes);
 app.use("/api/galeri", galeriRoutes);

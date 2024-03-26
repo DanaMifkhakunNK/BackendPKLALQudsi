@@ -3,6 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const { v4: uuid } = require("uuid");
 const HttpError = require("../models/errorModel");
+const kontakModel = require("../models/kontakModel");
 
 const createKontak = async (req, res, next) => {
   try {
@@ -42,7 +43,7 @@ const getKontak = async (req, res, next) => {
 const getSingle = async (req, res, next) => {
   try {
     const kontakId = req.params.id;
-    const kontak = await Paket.findById(kontakId);
+    const kontak = await kontakModel.findById(kontakId);
     if (!kontak) {
       return next(new HttpError("kotak not found", 404));
     }
